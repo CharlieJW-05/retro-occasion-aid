@@ -1,0 +1,686 @@
+From 6a55ce905c7a629fe9f5904ce3459ca6268ad483 Mon Sep 17 00:00:00 2001
+From: Charlie Walker <charliewalker@Charlies-MacBook-Air.local>
+Date: Sat, 20 Sep 2025 15:03:41 +0100
+Subject: [PATCH 1/2] Refresh landing page aesthetic
+
+---
+ src/components/FloatingBrandLogo.tsx |  77 +++---
+ src/components/RetroPoster.tsx       |  75 ++++++
+ src/index.css                        |  50 ++++
+ src/pages/Index.tsx                  | 354 +++++++++++++++++++--------
+ 4 files changed, 426 insertions(+), 130 deletions(-)
+ create mode 100644 src/components/RetroPoster.tsx
+
+diff --git a/src/components/FloatingBrandLogo.tsx b/src/components/FloatingBrandLogo.tsx
+index b874a4e..ac10085 100644
+--- a/src/components/FloatingBrandLogo.tsx
++++ b/src/components/FloatingBrandLogo.tsx
+@@ -1,53 +1,70 @@
+-import { useState } from "react";
++import { useState, type CSSProperties } from "react";
++import { cn } from "@/lib/utils";
+ 
+ interface FloatingBrandLogoProps {
+   src: string;
+   alt: string;
+-  style: React.CSSProperties;
+-  size?: 'sm' | 'md' | 'lg';
+-  color?: 'orange' | 'cream' | 'dark';
++  style: CSSProperties;
++  size?: "sm" | "md" | "lg";
++  color?: "orange" | "cream" | "dark";
++  className?: string;
+ }
+ 
+-const FloatingBrandLogo = ({ src, alt, style, size = 'md', color = 'orange' }: FloatingBrandLogoProps) => {
++const FloatingBrandLogo = ({
++  src,
++  alt,
++  style,
++  size = "md",
++  color = "orange",
++  className,
++}: FloatingBrandLogoProps) => {
+   const [isHovered, setIsHovered] = useState(false);
+ 
+   const sizeClasses = {
+-    sm: 'w-16 h-16',
+-    md: 'w-24 h-24',
+-    lg: 'w-32 h-32'
++    sm: "w-20 h-20",
++    md: "w-28 h-28",
++    lg: "w-36 h-36",
+   };
+ 
+   const colorClasses = {
+-    orange: 'bg-primary/10 border-primary/20',
+-    cream: 'bg-primary-muted/30 border-primary-muted/40',
+-    dark: 'bg-foreground/5 border-foreground/10'
++    orange: "bg-primary/15 border-primary/30 shadow-[0_18px_45px_rgba(249,115,22,0.28)]",
++    cream: "bg-primary-muted/40 border-primary-muted/40 shadow-[0_16px_40px_rgba(237,219,204,0.28)]",
++    dark: "bg-foreground/15 border-foreground/30 shadow-[0_16px_40px_rgba(16,9,5,0.25)]",
+   };
+ 
+   return (
+     <div
+-      className={`
+-        absolute brand-card float-animation rounded-lg p-4 cursor-pointer
+-        ${sizeClasses[size]} ${colorClasses[color]}
+-        ${isHovered ? 'scale-110' : ''}
+-        transition-all duration-300 ease-out
+-      `}
+-      style={{
+-        ...style,
+-        transform: `${style.transform || ''} ${isHovered ? 'scale(1.1)' : ''}`,
+-      }}
++      className={cn(
++        "absolute float-animation rounded-3xl transition-transform duration-500 ease-out",
++        sizeClasses[size],
++        isHovered ? "scale-[1.08]" : "scale-100"
++      )}
++      style={{ ...style }}
+       onMouseEnter={() => setIsHovered(true)}
+       onMouseLeave={() => setIsHovered(false)}
+     >
+-      <img
+-        src={src}
+-        alt={alt}
+-        className="w-full h-full object-contain filter drop-shadow-lg"
+-        style={{
+-          filter: isHovered ? 'brightness(1.1) contrast(1.1)' : undefined
+-        }}
+-      />
++      <div
++        className={cn(
++          "brand-card relative h-full w-full overflow-hidden rounded-3xl border p-4 backdrop-blur-md",
++          colorClasses[color],
++          className
++        )}
++      >
++        <div className="absolute inset-0 rounded-2xl border border-white/10 mix-blend-soft-light" aria-hidden="true" />
++        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.28),transparent_60%)] opacity-60" aria-hidden="true" />
++        <img
++          src={src}
++          alt={alt}
++          className="relative z-10 h-full w-full object-contain drop-shadow-[0_10px_20px_rgba(16,9,5,0.35)] transition-transform duration-300"
++          style={{
++            filter: isHovered
++              ? "brightness(1.18) contrast(1.18) saturate(1.22)"
++              : "brightness(1.08) contrast(1.08) saturate(1.12)",
++          }}
++        />
++      </div>
+     </div>
+   );
+ };
+ 
+-export default FloatingBrandLogo;
+\ No newline at end of file
++export default FloatingBrandLogo;
+diff --git a/src/components/RetroPoster.tsx b/src/components/RetroPoster.tsx
+new file mode 100644
+index 0000000..893d312
+--- /dev/null
++++ b/src/components/RetroPoster.tsx
+@@ -0,0 +1,75 @@
++import { cn } from "@/lib/utils";
++
++interface RetroPosterProps {
++  image: string;
++  label: string;
++  headline: string;
++  caption: string;
++  accent?: "orange" | "violet" | "charcoal";
++  align?: "left" | "right";
++  className?: string;
++  delay?: number;
++}
++
++const accentGradients: Record<NonNullable<RetroPosterProps["accent"]>, string> = {
++  orange: "from-primary/60 via-primary/20 to-transparent border-primary/40",
++  violet: "from-[#B388FF]/60 via-[#5125FF]/25 to-transparent border-[#8757FF]/40",
++  charcoal: "from-foreground/40 via-foreground/10 to-transparent border-foreground/30",
++};
++
++const RetroPoster = ({
++  image,
++  label,
++  headline,
++  caption,
++  accent = "orange",
++  align = "left",
++  className,
++  delay = 0,
++}: RetroPosterProps) => {
++  return (
++    <article
++      className={cn(
++        "group poster-floating",
++        align === "right" ? "self-start" : "self-end"
++      )}
++      style={{ animationDelay: `${delay}s` }}
++    >
++      <div
++        className={cn(
++          "relative overflow-hidden rounded-[28px] border bg-white/[0.05] backdrop-blur-2xl shadow-[0_24px_70px_rgba(16,9,5,0.35)] transition-transform duration-500",
++          "before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.55),transparent_65%)] before:opacity-60 before:mix-blend-screen",
++          className
++        )}
++      >
++        <div
++          className={cn(
++            "absolute inset-0 bg-gradient-to-br opacity-80 transition-opacity duration-500 group-hover:opacity-100",
++            accentGradients[accent]
++          )}
++          aria-hidden="true"
++        />
++        <div className="relative aspect-[3/4] overflow-hidden">
++          <img
++            src={image}
++            alt={headline}
++            className="absolute inset-0 h-full w-full object-cover object-top brightness-[1.08] contrast-[1.18] saturate-[1.25] transition-transform duration-700 group-hover:scale-[1.05]"
++          />
++          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_35%)] opacity-70 mix-blend-screen" />
++          <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_1px,transparent_3px,transparent_6px)] opacity-30" />
++        </div>
++        <div className="relative px-7 pb-7 pt-6 text-left text-white">
++          <p className="text-[11px] uppercase tracking-[0.6em] text-white/70">{label}</p>
++          <h3 className="mt-3 text-3xl font-black leading-tight tracking-tight drop-shadow-[0_6px_20px_rgba(16,9,5,0.55)]">
++            {headline}
++          </h3>
++          <p className="mt-4 max-w-[18rem] text-sm leading-relaxed text-white/80">
++            {caption}
++          </p>
++        </div>
++      </div>
++    </article>
++  );
++};
++
++export default RetroPoster;
+diff --git a/src/index.css b/src/index.css
+index 1148969..e22f356 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -173,6 +173,32 @@
+   .brand-card:hover {
+     transform: rotateY(10deg) rotateX(5deg) scale(1.05);
+   }
++
++  .poster-floating {
++    animation: poster-float 14s ease-in-out infinite;
++  }
++
++  .poster-floating:nth-child(2n) {
++    animation-duration: 18s;
++    animation-direction: reverse;
++  }
++
++  .poster-floating:nth-child(3n) {
++    animation-duration: 16s;
++    animation-delay: -2s;
++  }
++
++  .marquee {
++    position: relative;
++    overflow: hidden;
++  }
++
++  .marquee__inner {
++    display: flex;
++    align-items: center;
++    width: max-content;
++    animation: marquee-slide 24s linear infinite;
++  }
+ }
+ 
+ @keyframes float {
+@@ -189,3 +215,27 @@
+     transform: translateY(-15px) rotate(2deg);
+   }
+ }
++
++@keyframes poster-float {
++  0%, 100% {
++    transform: translateY(0px) rotate(0deg);
++  }
++  25% {
++    transform: translateY(-16px) rotate(-1.5deg);
++  }
++  50% {
++    transform: translateY(-8px) rotate(1.5deg);
++  }
++  75% {
++    transform: translateY(-20px) rotate(-0.5deg);
++  }
++}
++
++@keyframes marquee-slide {
++  0% {
++    transform: translateX(0);
++  }
++  100% {
++    transform: translateX(-50%);
++  }
++}
+diff --git a/src/pages/Index.tsx b/src/pages/Index.tsx
+index b2c9ee3..efcfca3 100644
+--- a/src/pages/Index.tsx
++++ b/src/pages/Index.tsx
+@@ -1,83 +1,170 @@
+-import { useState } from "react";
++import { useState, type CSSProperties } from "react";
+ import FloatingBrandLogo from "@/components/FloatingBrandLogo";
+ import RetroButton from "@/components/RetroButton";
+-import { Mic, PenTool } from "lucide-react";
++import RetroPoster from "@/components/RetroPoster";
++import { Mic, PenTool, Sparkles, ArrowUpRight } from "lucide-react";
+ import { toast } from "sonner";
+ 
+-// Import brand logos
+ import nikeRetro from "@/assets/nike-retro.jpg";
+ import adidasRetro from "@/assets/adidas-retro.jpg";
+ import ralphLaurenRetro from "@/assets/ralph-lauren-retro.jpg";
+ import stussyRetro from "@/assets/stussy-retro.jpg";
+ 
+ const Index = () => {
+-  const [activeMode, setActiveMode] = useState<'voice' | 'text' | null>(null);
++  const [activeMode, setActiveMode] = useState<"voice" | "text" | null>(null);
+ 
+   const handleVoiceMode = () => {
+-    setActiveMode('voice');
++    setActiveMode("voice");
+     toast.success("Voice mode activated! Tell me about the occasion and I'll help you choose the perfect outfit.");
+   };
+ 
+   const handleTextMode = () => {
+-    setActiveMode('text');
++    setActiveMode("text");
+     toast.success("Text mode activated! Describe the occasion and I'll suggest the ideal outfit.");
+   };
+ 
+-  // Brand logo positions and styles
+   const brandLogos = [
+     {
+       src: nikeRetro,
+-      alt: "Nike Retro Logo",
++      alt: "Nike Archive Logo",
+       style: {
+-        top: '15%',
+-        left: '8%',
+-        transform: 'rotate(-12deg)',
+-      },
+-      size: 'lg' as const,
+-      color: 'orange' as const,
++        top: "8%",
++        left: "6%",
++        animationDelay: "0s",
++      } as CSSProperties,
++      size: "lg" as const,
++      color: "orange" as const,
++      className: "-rotate-[14deg]",
+     },
+     {
+       src: adidasRetro,
+-      alt: "Adidas Retro Logo", 
++      alt: "Adidas 1986 Logo",
+       style: {
+-        top: '25%',
+-        right: '12%',
+-        transform: 'rotate(8deg)',
+-      },
+-      size: 'md' as const,
+-      color: 'dark' as const,
++        top: "28%",
++        right: "9%",
++        animationDelay: "1.2s",
++      } as CSSProperties,
++      size: "md" as const,
++      color: "cream" as const,
++      className: "rotate-[9deg]",
+     },
+     {
+       src: ralphLaurenRetro,
+-      alt: "Ralph Lauren Retro Logo",
++      alt: "Ralph Lauren Promo",
+       style: {
+-        bottom: '30%',
+-        left: '10%',
+-        transform: 'rotate(15deg)',
+-      },
+-      size: 'md' as const,
+-      color: 'cream' as const,
++        bottom: "32%",
++        left: "12%",
++        animationDelay: "2.4s",
++      } as CSSProperties,
++      size: "md" as const,
++      color: "dark" as const,
++      className: "rotate-[6deg]",
+     },
+     {
+       src: stussyRetro,
+-      alt: "Stussy Retro Logo",
++      alt: "Stussy Capsule",
+       style: {
+-        bottom: '20%',
+-        right: '15%',
+-        transform: 'rotate(-10deg)',
+-      },
+-      size: 'lg' as const,
+-      color: 'orange' as const,
++        bottom: "18%",
++        right: "14%",
++        animationDelay: "3.2s",
++      } as CSSProperties,
++      size: "lg" as const,
++      color: "orange" as const,
++      className: "-rotate-[10deg]",
+     },
+   ];
+ 
++  const brandPosters = [
++    {
++      image: nikeRetro,
++      label: "Nike Archive '84",
++      headline: "AIR WAVE RUNNER",
++      caption: "Gradient mesh with neon piping engineered for midnight city runs and studio decks alike.",
++      accent: "orange" as const,
++      align: "left" as const,
++      className: "-rotate-2",
++      delay: 0,
++    },
++    {
++      image: adidasRetro,
++      label: "Adidas Studio Drop",
++      headline: "SYNTH-MOD TRACKSUIT",
++      caption: "Sculpted shoulders, reflective stripes, and vinyl sheen to catch every strobe.",
++      accent: "violet" as const,
++      align: "right" as const,
++      className: "translate-x-12 rotate-3",
++      delay: 1.2,
++    },
++    {
++      image: ralphLaurenRetro,
++      label: "Lauren Society",
++      headline: "MIDNIGHT LOFT BLAZER",
++      caption: "Velvet lapels, champagne lining, and analog pinstripes tailored for rooftop affairs.",
++      accent: "charcoal" as const,
++      align: "left" as const,
++      className: "-translate-x-6 rotate-1",
++      delay: 2.4,
++    },
++  ];
++
++  const tickerItems = [
++    "Nike Archives",
++    "Adidas Originals",
++    "Lauren Studio",
++    "Stussy Capsule",
++    "Occasion Engine",
++  ];
++
++  const occasionScenes = [
++    {
++      title: "Neon Nights",
++      description: "Synthwave clubs, laser lit floors, velvet rope energy.",
++    },
++    {
++      title: "Editorial Launch",
++      description: "Art gallery reveals with champagne flutes and flashbulbs.",
++    },
++    {
++      title: "Runway Rehearsal",
++      description: "Backstage calls, rapid changes, high-contrast looks.",
++    },
++  ];
++
++  const aiHighlights = [
++    { label: "Prompt to wardrobe", value: "< 30s" },
++    { label: "Curated brand sets", value: "12" },
++    { label: "Styling accuracy", value: "98%" },
++  ];
++
+   return (
+     <>
+-      <title>What Is The Occasion - 80s Fashion AI</title>
+-      <meta name="description" content="Get personalized 80s-inspired outfit recommendations from our AI fashion assistant. Discover the perfect look for any occasion with vintage style." />
+-      
+-      <main className="min-h-screen bg-background relative overflow-hidden">
+-        {/* Floating Brand Logos */}
++      <title>Vulture Droids — Occasion Engine</title>
++      <meta
++        name="description"
++        content="Discover 80s editorial looks with the Vulture Droids Occasion Engine. Describe the vibe and get motion-packed, brand-ready outfit stories."
++      />
++
++      <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
++        <div
++          className="pointer-events-none absolute inset-0"
++          aria-hidden="true"
++          style={{
++            background:
++              "radial-gradient(120% 120% at 10% -10%, rgba(255, 160, 103, 0.35), transparent 60%), radial-gradient(90% 90% at 85% 10%, rgba(255, 200, 150, 0.15), transparent 70%), linear-gradient(160deg, rgba(255, 255, 255, 0.05), transparent)",
++          }}
++        />
++        <div
++          className="pointer-events-none absolute inset-0 mix-blend-soft-light opacity-50"
++          aria-hidden="true"
++          style={{
++            backgroundImage:
++              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.35'/%3E%3C/svg%3E\")",
++            backgroundSize: "280px 280px",
++          }}
++        />
++        <div className="pointer-events-none absolute -top-32 left-[-10%] h-[520px] w-[520px] rounded-full bg-primary/20 blur-[140px] mix-blend-screen lg:left-[-4%]" aria-hidden="true" />
++        <div className="pointer-events-none absolute bottom-[-30%] right-[-8%] h-[680px] w-[680px] rounded-full bg-[#FFB17A]/20 blur-[160px] mix-blend-screen" aria-hidden="true" />
++
+         {brandLogos.map((logo, index) => (
+           <FloatingBrandLogo
+             key={index}
+@@ -86,74 +173,141 @@ const Index = () => {
+             style={logo.style}
+             size={logo.size}
+             color={logo.color}
++            className={logo.className}
+           />
+         ))}
+ 
+-        {/* Main Content */}
+-        <section className="flex flex-col items-center justify-center min-h-screen px-6 relative z-10">
+-          <div className="text-center max-w-4xl mx-auto">
+-            {/* Hero Title */}
+-            <h1 className="editorial-title text-6xl md:text-8xl lg:text-9xl text-primary retro-glow animate-retro-glow mb-8">
+-              WHAT IS THE
+-              <br />
+-              OCCASION?
+-            </h1>
+-
+-            {/* Subtitle */}
+-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto font-medium">
+-              Tell our AI fashion assistant about your event and get personalized 80s-inspired outfit recommendations
+-            </p>
+-
+-            {/* Action Buttons */}
+-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+-              <RetroButton
+-                variant="primary"
+-                size="lg"
+-                onClick={handleVoiceMode}
+-                className="w-full sm:w-auto min-w-[200px]"
+-              >
+-                <Mic className="mr-3 h-5 w-5" />
+-                Talk to AI
+-              </RetroButton>
+-
+-              <RetroButton
+-                variant="outline"
+-                size="lg"
+-                onClick={handleTextMode}
+-                className="w-full sm:w-auto min-w-[200px]"
+-              >
+-                <PenTool className="mr-3 h-5 w-5" />
+-                Write a Prompt
+-              </RetroButton>
++        <div className="pointer-events-none absolute left-6 top-1/2 hidden -translate-y-1/2 rotate-[-90deg] transform whitespace-nowrap text-[11px] uppercase tracking-[0.65em] text-muted-foreground/70 lg:block">
++          80s fashion intelligence · modern ai styling · curated brand drops
++        </div>
++
++        <div className="relative z-10 px-6 pb-24 pt-14 sm:px-10 lg:px-16">
++          <header className="flex flex-col gap-4 text-[11px] uppercase tracking-[0.55em] text-muted-foreground/70 sm:flex-row sm:items-center sm:justify-between">
++            <span className="text-primary">Vulture Droids Studio</span>
++            <div className="flex gap-6 text-muted-foreground/60">
++              <span>Issue 002</span>
++              <span>NYC ↔ LDN</span>
++              <span>Analog Season</span>
++            </div>
++          </header>
++
++          <section className="mt-16 grid gap-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
++            <div className="space-y-10">
++              <div className="inline-flex items-center gap-3 rounded-full border border-primary/40 bg-primary/10 px-6 py-2 text-[11px] uppercase tracking-[0.55em] text-primary">
++                <span>Occasion Engine</span>
++                <span className="h-1 w-1 rounded-full bg-primary" />
++                <span>80s Editorial</span>
++              </div>
++
++              <h1 className="editorial-title text-[clamp(3.2rem,9vw,6.3rem)] leading-[0.82] text-primary drop-shadow-[0_28px_80px_rgba(249,115,22,0.35)]">
++                WHAT IS YOUR
++                <br />
++                OCCASION STORY?
++              </h1>
++
++              <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
++                Feed the engine with your scene, mood, and soundtrack. We spin up brand-forward looks inspired by 80s
++                editorial covers, primed with motion, glow, and AI precision.
++              </p>
++
++              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
++                <RetroButton
++                  variant="primary"
++                  size="lg"
++                  onClick={handleVoiceMode}
++                  className="w-full sm:w-auto sm:min-w-[220px]"
++                >
++                  <Mic className="mr-3 h-5 w-5" />
++                  Vocal Brief
++                </RetroButton>
++
++                <RetroButton
++                  variant="outline"
++                  size="lg"
++                  onClick={handleTextMode}
++                  className="w-full sm:w-auto sm:min-w-[220px] border-primary/40 text-primary hover:border-primary"
++                >
++                  <PenTool className="mr-3 h-5 w-5" />
++                  Typed Prompt
++                </RetroButton>
++
++                <button className="group inline-flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-muted-foreground transition hover:text-primary">
++                  <Sparkles className="h-4 w-4 text-primary" />
++                  Demo a Scene
++                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
++                </button>
++              </div>
++
++              {activeMode && (
++                <div className="max-w-xl rounded-3xl border border-primary/30 bg-primary/10 p-7 backdrop-blur-md">
++                  <p className="text-sm font-semibold uppercase tracking-[0.45em] text-primary">
++                    {activeMode === "voice" ? "Voice Mode Active" : "Text Mode Active"}
++                  </p>
++                  <p className="mt-3 text-base text-primary-foreground/90">
++                    {activeMode === "voice"
++                      ? "Start speaking — the engine is listening for venue energy, dress codes, and sonic cues."
++                      : "Describe your event vibe, dress codes, and colors. We'll translate it into brand-ready lookbooks."}
++                  </p>
++                </div>
++              )}
++
++              <div className="grid gap-6 sm:grid-cols-3">
++                {occasionScenes.map((scene) => (
++                  <div
++                    key={scene.title}
++                    className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-left backdrop-blur-md transition hover:border-primary/50 hover:bg-primary/10"
++                  >
++                    <p className="text-xs uppercase tracking-[0.45em] text-muted-foreground/70 group-hover:text-primary">
++                      {scene.title}
++                    </p>
++                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground/90 group-hover:text-foreground">
++                      {scene.description}
++                    </p>
++                  </div>
++                ))}
++              </div>
++
++              <div className="grid gap-6 sm:grid-cols-3">
++                {aiHighlights.map((highlight) => (
++                  <div key={highlight.label} className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 text-left">
++                    <p className="text-[11px] uppercase tracking-[0.45em] text-muted-foreground/60">{highlight.label}</p>
++                    <p className="mt-4 text-3xl font-black text-foreground">{highlight.value}</p>
++                  </div>
++                ))}
++              </div>
++            </div>
++
++            <div className="relative flex flex-col gap-8">
++              <div className="pointer-events-none absolute -inset-10 hidden rounded-[36px] border border-primary/20 mix-blend-soft-light lg:block" aria-hidden="true" />
++              {brandPosters.map((poster) => (
++                <RetroPoster key={poster.label} {...poster} />
++              ))}
+             </div>
++          </section>
+ 
+-            {/* Active Mode Indicator */}
+-            {activeMode && (
+-              <div className="mt-8 p-6 bg-primary/10 border border-primary/20 rounded-lg backdrop-blur-sm">
+-                <p className="text-primary font-semibold text-lg">
+-                  {activeMode === 'voice' 
+-                    ? "🎤 Voice Mode Active - Start speaking about your occasion!"
+-                    : "✍️ Text Mode Active - Describe your event and style preferences!"
+-                  }
+-                </p>
+-                <p className="text-muted-foreground mt-2">
+-                  Whether it's a disco party, business meeting, or casual hangout, 
+-                  I'll help you nail that perfect 80s-inspired look!
+-                </p>
++          <section className="mt-24">
++            <div className="marquee rounded-full border border-primary/30 bg-primary/10 py-4">
++              <div className="marquee__inner">
++                {[...tickerItems, ...tickerItems].map((item, index) => (
++                  <span
++                    key={`${item}-${index}`}
++                    className="mx-10 text-xs uppercase tracking-[0.65em] text-primary/90"
++                  >
++                    {item}
++                  </span>
++                ))}
+               </div>
+-            )}
+-          </div>
+-        </section>
+-
+-        {/* Bottom Brand Strip */}
+-        <footer className="absolute bottom-6 left-0 right-0 text-center">
+-          <p className="text-muted-foreground text-sm">
+-            Powered by vintage fashion expertise and modern AI
+-          </p>
+-        </footer>
++            </div>
++          </section>
++
++          <footer className="mt-20 flex flex-col gap-4 text-xs uppercase tracking-[0.45em] text-muted-foreground/70 sm:flex-row sm:items-center sm:justify-between">
++            <span>Powered by analog archives & modern AI</span>
++            <span>All looks calibrated in under 30 seconds</span>
++          </footer>
++        </div>
+       </main>
+     </>
+   );
+ };
+ 
+-export default Index;
+\ No newline at end of file
++export default Index;
+-- 
+2.39.5 (Apple Git-154)
+

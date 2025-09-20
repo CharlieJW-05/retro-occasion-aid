@@ -1,0 +1,379 @@
+From 4245ed374f9a3184ba28140e550a900d876a0f63 Mon Sep 17 00:00:00 2001
+From: Charlie Walker <charliewalker@Charlies-MacBook-Air.local>
+Date: Sat, 20 Sep 2025 17:41:58 +0100
+Subject: [PATCH 2/2] Polish hero header branding
+
+---
+ src/components/icons/NvidiaSymbol.tsx |  22 +++
+ src/index.css                         |  19 ---
+ src/pages/Index.tsx                   | 200 ++++++++++++++++++--------
+ 3 files changed, 159 insertions(+), 82 deletions(-)
+ create mode 100644 src/components/icons/NvidiaSymbol.tsx
+
+diff --git a/src/components/icons/NvidiaSymbol.tsx b/src/components/icons/NvidiaSymbol.tsx
+new file mode 100644
+index 0000000..1d98c6f
+--- /dev/null
++++ b/src/components/icons/NvidiaSymbol.tsx
+@@ -0,0 +1,22 @@
++import { cn } from "@/lib/utils";
++
++interface NvidiaSymbolProps {
++  className?: string;
++}
++
++const NvidiaSymbol = ({ className }: NvidiaSymbolProps) => (
++  <svg
++    viewBox="0 0 24 24"
++    role="img"
++    aria-hidden="true"
++    className={cn("text-[#76B900]", className)}
++    xmlns="http://www.w3.org/2000/svg"
++  >
++    <path
++      d="M8.948 8.798v-1.43a6.7 6.7 0 0 1 .424-.018c3.922-.124 6.493 3.374 6.493 3.374s-2.774 3.851-5.75 3.851c-.398 0-.787-.062-1.158-.185v-4.346c1.528.185 1.837.857 2.747 2.385l2.04-1.714s-1.492-1.952-4-1.952a6.016 6.016 0 0 0-.796.035m0-4.735v2.138l.424-.027c5.45-.185 9.01 4.47 9.01 4.47s-4.08 4.964-8.33 4.964c-.37 0-.733-.035-1.095-.097v1.325c.3.035.61.062.91.062 3.957 0 6.82-2.023 9.593-4.408.459.371 2.34 1.263 2.73 1.652-2.633 2.208-8.772 3.984-12.253 3.984-.335 0-.653-.018-.971-.053v1.864H24V4.063zm0 10.326v1.131c-3.657-.654-4.673-4.46-4.673-4.46s1.758-1.944 4.673-2.262v1.237H8.94c-1.528-.186-2.73 1.245-2.73 1.245s.68 2.412 2.739 3.11M2.456 10.9s2.164-3.197 6.5-3.533V6.201C4.153 6.59 0 10.653 0 10.653s2.35 6.802 8.948 7.42v-1.237c-4.84-.6-6.492-5.936-6.492-5.936z"
++      fill="currentColor"
++    />
++  </svg>
++);
++
++export default NvidiaSymbol;
+diff --git a/src/index.css b/src/index.css
+index e22f356..0a2e018 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -188,17 +188,6 @@
+     animation-delay: -2s;
+   }
+ 
+-  .marquee {
+-    position: relative;
+-    overflow: hidden;
+-  }
+-
+-  .marquee__inner {
+-    display: flex;
+-    align-items: center;
+-    width: max-content;
+-    animation: marquee-slide 24s linear infinite;
+-  }
+ }
+ 
+ @keyframes float {
+@@ -231,11 +220,3 @@
+   }
+ }
+ 
+-@keyframes marquee-slide {
+-  0% {
+-    transform: translateX(0);
+-  }
+-  100% {
+-    transform: translateX(-50%);
+-  }
+-}
+diff --git a/src/pages/Index.tsx b/src/pages/Index.tsx
+index efcfca3..da01f91 100644
+--- a/src/pages/Index.tsx
++++ b/src/pages/Index.tsx
+@@ -2,13 +2,14 @@ import { useState, type CSSProperties } from "react";
+ import FloatingBrandLogo from "@/components/FloatingBrandLogo";
+ import RetroButton from "@/components/RetroButton";
+ import RetroPoster from "@/components/RetroPoster";
+-import { Mic, PenTool, Sparkles, ArrowUpRight } from "lucide-react";
++import { Archive, MessageCircle, Mic, PenTool } from "lucide-react";
+ import { toast } from "sonner";
+ 
+ import nikeRetro from "@/assets/nike-retro.jpg";
+ import adidasRetro from "@/assets/adidas-retro.jpg";
+ import ralphLaurenRetro from "@/assets/ralph-lauren-retro.jpg";
+ import stussyRetro from "@/assets/stussy-retro.jpg";
++import NvidiaSymbol from "@/components/icons/NvidiaSymbol";
+ 
+ const Index = () => {
+   const [activeMode, setActiveMode] = useState<"voice" | "text" | null>(null);
+@@ -48,18 +49,6 @@ const Index = () => {
+       color: "cream" as const,
+       className: "rotate-[9deg]",
+     },
+-    {
+-      src: ralphLaurenRetro,
+-      alt: "Ralph Lauren Promo",
+-      style: {
+-        bottom: "32%",
+-        left: "12%",
+-        animationDelay: "2.4s",
+-      } as CSSProperties,
+-      size: "md" as const,
+-      color: "dark" as const,
+-      className: "rotate-[6deg]",
+-    },
+     {
+       src: stussyRetro,
+       alt: "Stussy Capsule",
+@@ -107,14 +96,6 @@ const Index = () => {
+     },
+   ];
+ 
+-  const tickerItems = [
+-    "Nike Archives",
+-    "Adidas Originals",
+-    "Lauren Studio",
+-    "Stussy Capsule",
+-    "Occasion Engine",
+-  ];
+-
+   const occasionScenes = [
+     {
+       title: "Neon Nights",
+@@ -131,9 +112,24 @@ const Index = () => {
+   ];
+ 
+   const aiHighlights = [
+-    { label: "Prompt to wardrobe", value: "< 30s" },
+-    { label: "Curated brand sets", value: "12" },
+-    { label: "Styling accuracy", value: "98%" },
++    { label: "Briefing to lookbook", value: "24h" },
++    { label: "Partner houses", value: "18" },
++    { label: "Client retention", value: "97%" },
++  ];
++
++  const professionalDeliverables = [
++    {
++      title: "Lookbook Dossier",
++      description: "Editorial treatment with silhouettes, colour stories, and accessory maps ready for stakeholder review.",
++    },
++    {
++      title: "Procurement Deck",
++      description: "Verified sourcing links, stock checks, and tiered budgets to fast-track wardrobe approvals.",
++    },
++    {
++      title: "Event Run Sheet",
++      description: "Fittings schedule, contingency looks, and on-site styling checkpoints to keep the team aligned.",
++    },
+   ];
+ 
+   return (
+@@ -141,7 +137,7 @@ const Index = () => {
+       <title>Vulture Droids — Occasion Engine</title>
+       <meta
+         name="description"
+-        content="Discover 80s editorial looks with the Vulture Droids Occasion Engine. Describe the vibe and get motion-packed, brand-ready outfit stories."
++        content="Brief the Vulture Droids Occasion Engine and receive polished wardrobe stories grounded in your preferences and event goals."
+       />
+ 
+       <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
+@@ -177,17 +173,56 @@ const Index = () => {
+           />
+         ))}
+ 
+-        <div className="pointer-events-none absolute left-6 top-1/2 hidden -translate-y-1/2 rotate-[-90deg] transform whitespace-nowrap text-[11px] uppercase tracking-[0.65em] text-muted-foreground/70 lg:block">
+-          80s fashion intelligence · modern ai styling · curated brand drops
+-        </div>
+-
+         <div className="relative z-10 px-6 pb-24 pt-14 sm:px-10 lg:px-16">
+-          <header className="flex flex-col gap-4 text-[11px] uppercase tracking-[0.55em] text-muted-foreground/70 sm:flex-row sm:items-center sm:justify-between">
+-            <span className="text-primary">Vulture Droids Studio</span>
+-            <div className="flex gap-6 text-muted-foreground/60">
+-              <span>Issue 002</span>
+-              <span>NYC ↔ LDN</span>
+-              <span>Analog Season</span>
++          <header className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between lg:gap-10">
++            <div className="flex items-center gap-3">
++              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10">
++                <svg
++                  viewBox="0 0 32 32"
++                  aria-hidden="true"
++                  className="h-5 w-5 text-primary"
++                  fill="none"
++                >
++                  <path
++                    d="M16 11.5c0-1.2.7-2.3 1.8-2.8l.7-.3c1-.4 1.6-1.2 1.6-2.2 0-1.5-1.1-2.6-2.6-2.6s-2.6 1.1-2.6 2.6"
++                    stroke="currentColor"
++                    strokeWidth="1.6"
++                    strokeLinecap="round"
++                    strokeLinejoin="round"
++                  />
++                  <path
++                    d="M6 21.5 16 13l10 8.5"
++                    stroke="currentColor"
++                    strokeWidth="1.6"
++                    strokeLinecap="round"
++                    strokeLinejoin="round"
++                  />
++                  <path
++                    d="M8.8 23.5h14.4"
++                    stroke="currentColor"
++                    strokeWidth="1.6"
++                    strokeLinecap="round"
++                    strokeLinejoin="round"
++                  />
++                </svg>
++              </span>
++              <div className="flex flex-col leading-tight">
++                <span className="text-xs uppercase tracking-[0.65em] text-primary">Scene</span>
++                <span className="text-[10px] uppercase tracking-[0.45em] text-muted-foreground/70">Wardrobe Lab</span>
++              </div>
++            </div>
++
++            <div className="flex flex-col items-end gap-3 text-[11px] uppercase tracking-[0.55em] text-muted-foreground/70 sm:items-end">
++              <div className="flex items-center gap-2 text-primary">
++                <NvidiaSymbol className="h-6 w-6" />
++                <span className="text-[11px] uppercase tracking-[0.45em]">Powered by NVIDIA</span>
++              </div>
++              <span className="text-primary/70">Vulture Droids Studio</span>
++              <div className="flex gap-6 text-muted-foreground/60">
++                <span>Issue 002</span>
++                <span>NYC ↔ LDN</span>
++                <span>Analog Season</span>
++              </div>
+             </div>
+           </header>
+ 
+@@ -195,22 +230,20 @@ const Index = () => {
+             <div className="space-y-10">
+               <div className="inline-flex items-center gap-3 rounded-full border border-primary/40 bg-primary/10 px-6 py-2 text-[11px] uppercase tracking-[0.55em] text-primary">
+                 <span>Occasion Engine</span>
+-                <span className="h-1 w-1 rounded-full bg-primary" />
+-                <span>80s Editorial</span>
+               </div>
+ 
+               <h1 className="editorial-title text-[clamp(3.2rem,9vw,6.3rem)] leading-[0.82] text-primary drop-shadow-[0_28px_80px_rgba(249,115,22,0.35)]">
+-                WHAT IS YOUR
++                WHAT IS THE
+                 <br />
+-                OCCASION STORY?
++                OCCASION?
+               </h1>
+ 
+               <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
+-                Feed the engine with your scene, mood, and soundtrack. We spin up brand-forward looks inspired by 80s
+-                editorial covers, primed with motion, glow, and AI precision.
++                Tell us the occasion and we’ll base your look on your preferences and inspirations — making sure you have
++                everything you need to feel confident and complete.
+               </p>
+ 
+-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
++              <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start lg:gap-5">
+                 <RetroButton
+                   variant="primary"
+                   size="lg"
+@@ -218,7 +251,7 @@ const Index = () => {
+                   className="w-full sm:w-auto sm:min-w-[220px]"
+                 >
+                   <Mic className="mr-3 h-5 w-5" />
+-                  Vocal Brief
++                  Talk to AI
+                 </RetroButton>
+ 
+                 <RetroButton
+@@ -228,14 +261,34 @@ const Index = () => {
+                   className="w-full sm:w-auto sm:min-w-[220px] border-primary/40 text-primary hover:border-primary"
+                 >
+                   <PenTool className="mr-3 h-5 w-5" />
+-                  Typed Prompt
++                  Write a Prompt
+                 </RetroButton>
+ 
+-                <button className="group inline-flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-muted-foreground transition hover:text-primary">
+-                  <Sparkles className="h-4 w-4 text-primary" />
+-                  Demo a Scene
+-                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+-                </button>
++                <RetroButton
++                  variant="secondary"
++                  size="lg"
++                  className="w-full sm:w-auto sm:min-w-[220px]"
++                >
++                  <Archive className="mr-3 h-5 w-5" />
++                  Add to Wardrobe
++                </RetroButton>
++
++                <RetroButton
++                  variant="outline"
++                  size="lg"
++                  className="w-full sm:w-auto sm:min-w-[220px] border-primary/40 text-primary hover:border-primary"
++                >
++                  <MessageCircle className="mr-3 h-5 w-5" />
++                  Voice Chat
++                </RetroButton>
++
++                <RetroButton
++                  variant="primary"
++                  size="lg"
++                  className="w-full sm:w-auto sm:min-w-[220px]"
++                >
++                  Style Generator
++                </RetroButton>
+               </div>
+ 
+               {activeMode && (
+@@ -275,6 +328,24 @@ const Index = () => {
+                   </div>
+                 ))}
+               </div>
++
++              <div className="rounded-[32px] border border-primary/30 bg-primary/10 p-8 backdrop-blur-md">
++                <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
++                  <div className="flex flex-col gap-4 text-primary sm:flex-row sm:items-center sm:gap-5">
++                    <span className="text-[11px] uppercase tracking-[0.45em] text-primary/80">Powered by</span>
++                    <div className="flex items-center gap-4">
++                      <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-primary/25 bg-white shadow-[0_18px_45px_rgba(21,122,58,0.25)]">
++                        <NvidiaSymbol className="h-10 w-10" />
++                      </span>
++                      <span className="text-base font-semibold uppercase tracking-[0.6em] text-foreground">NVIDIA</span>
++                    </div>
++                  </div>
++                  <p className="max-w-sm text-xs leading-relaxed text-muted-foreground/80">
++                    Scene accelerates its Occasion Engine on NVIDIA hardware to simulate fabric flow, render lighting
++                    passes, and tailor wardrobe recommendations in real time.
++                  </p>
++                </div>
++              </div>
+             </div>
+ 
+             <div className="relative flex flex-col gap-8">
+@@ -286,23 +357,26 @@ const Index = () => {
+           </section>
+ 
+           <section className="mt-24">
+-            <div className="marquee rounded-full border border-primary/30 bg-primary/10 py-4">
+-              <div className="marquee__inner">
+-                {[...tickerItems, ...tickerItems].map((item, index) => (
+-                  <span
+-                    key={`${item}-${index}`}
+-                    className="mx-10 text-xs uppercase tracking-[0.65em] text-primary/90"
+-                  >
+-                    {item}
+-                  </span>
+-                ))}
+-              </div>
++            <h2 className="text-sm font-semibold uppercase tracking-[0.45em] text-muted-foreground/70">
++              Delivery Suite
++            </h2>
++            <div className="mt-6 grid gap-6 lg:grid-cols-3">
++              {professionalDeliverables.map((item) => (
++                <div
++                  key={item.title}
++                  className="rounded-3xl border border-white/10 bg-white/[0.05] p-7 text-left backdrop-blur-md"
++                >
++                  <p className="text-xs uppercase tracking-[0.45em] text-primary/80">{item.title}</p>
++                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground/90">{item.description}</p>
++                </div>
++              ))}
+             </div>
+           </section>
+ 
+-          <footer className="mt-20 flex flex-col gap-4 text-xs uppercase tracking-[0.45em] text-muted-foreground/70 sm:flex-row sm:items-center sm:justify-between">
+-            <span>Powered by analog archives & modern AI</span>
+-            <span>All looks calibrated in under 30 seconds</span>
++          <footer className="mt-20 flex flex-col gap-3 text-sm text-muted-foreground/80 sm:flex-row sm:items-center sm:justify-between">
++            <span>© 2025 Vulture Droids Studio · Occasion Engine</span>
++            <span>Client Services Desk · concierge@vulturedroids.ai</span>
++            <span>Schedule a wardrobe review · Book a consult session</span>
+           </footer>
+         </div>
+       </main>
+-- 
+2.39.5 (Apple Git-154)
+
