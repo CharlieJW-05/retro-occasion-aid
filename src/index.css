@@ -188,17 +188,6 @@
     animation-delay: -2s;
   }
 
-  .marquee {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .marquee__inner {
-    display: flex;
-    align-items: center;
-    width: max-content;
-    animation: marquee-slide 24s linear infinite;
-  }
 }
 
 @keyframes float {
@@ -231,11 +220,3 @@
   }
 }
 
-@keyframes marquee-slide {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
